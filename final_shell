@@ -1,0 +1,78 @@
+
+import paramiko
+import cmd
+
+ 
+
+class RunCommand(cmd.Cmd):
+    """ Simple shell to run a command on the host """
+
+    prompt = 'ssh > '
+
+    def __init__(self):
+        cmd.Cmd.__init__(self)
+        self.hosts = []
+        self.connections = []
+        self.commands = []
+
+    def do_add_host(self, args):
+        """add_host 
+        Add the host to the host list"""
+        data = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\hosts_data.txt"), "r")
+        for line in data:
+            strip = line.strip()
+            self.hosts.append(strip)
+        print self.hosts
+
+
+
+    def do_connect(self, args):
+        """Connect to all hosts in the hosts list"""
+        num = 0
+        for host in self.hosts:
+            if num < (len(self.hosts)-2):
+                print num
+                print self.hosts[-2], self.hosts[-1]
+                client = paramiko.SSHClient()
+                client.set_missing_host_key_policy(
+                    paramiko.AutoAddPolicy())
+                
+                try:
+                    client.connect(host, 
+                        username=self.hosts[-2], 
+                        password=self.hosts[-1])
+                    self.connections.append(client)
+                except paramiko.ssh_exception.AuthenticationException:
+                    print 'AuthentificationException on', host
+                except paramiko.ssh_exception.SSHException:
+                    print 'SSHException (timeout) on', host
+                num+=1
+
+    def do_add_command(self, args):
+        data = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\commands.txt"), "r")
+        for line in data:
+            strip = line.strip()
+            self.commands.append(strip)
+        print self.commands
+
+    def do_run(self, args):
+        """run 
+        Execute this command on all hosts in the list"""
+        f = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\data_dump.txt"), "a")
+        for command in self.commands:
+            if command:
+                for host, conn in zip(self.hosts, self.connections):
+                    stdin, stdout, stderr = conn.exec_command(command)
+                    stdin.close()
+                    for line in stdout.read().splitlines():
+                        f.write('host: %s: %s' % (host, line))
+
+            else:
+                print "usage: run "
+
+    def do_close(self, args):
+        for conn in self.connections:
+            conn.close()
+
+if __name__ == '__main__':
+    RunCommand().cmdloop()
