@@ -16,8 +16,7 @@ class RunCommand(cmd.Cmd):
         self.commands = []
 
     def do_add_host(self, args):
-        """add_host 
-        Add the host to the host list"""
+        #uses a text file to add the access the different access points
         data = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\hosts_data.txt"), "r")
         for line in data:
             strip = line.strip()
@@ -49,6 +48,7 @@ class RunCommand(cmd.Cmd):
                 num+=1
 
     def do_add_command(self, args):
+    #adds a list of commands to the shell based on the inputted txt file
         data = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\commands.txt"), "r")
         for line in data:
             strip = line.strip()
@@ -59,9 +59,10 @@ class RunCommand(cmd.Cmd):
         """run 
         Execute this command on all hosts in the list"""
         f = open(str("C:\\Users\\Reagan\\Desktop\\Zeecon\\data_dump.txt"), "a")
-        for command in self.commands:
+        for command in self.commands: #for every command
             if command:
-                for host, conn in zip(self.hosts, self.connections):
+                for host, conn in zip(self.hosts, self.connections): #for every access point
+                    #runs every command through each access point and prints the output
                     stdin, stdout, stderr = conn.exec_command(command)
                     stdin.close()
                     for line in stdout.read().splitlines():
